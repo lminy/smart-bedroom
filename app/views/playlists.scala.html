@@ -1,0 +1,118 @@
+@*
+ * This template takes a single argument, a String containing a
+ * message to display.
+ *@
+@(songs: Map[String,List[String]])
+
+@*
+ * Call the the `main` template with two arguments. The first
+ * argument is a `String` with the title of the page, the second
+ * argument is an `Html` object containing the body of the page.
+ *@
+@main("Playlists") {
+
+	<!-- Navigation -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Smart bedroom</a>
+            </div>
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container">
+
+        <!-- Title -->
+        <div class="row">
+            <div class="col-lg-12">
+                <h3>Playlists</h3>
+            </div>
+        </div>
+        <!-- /.row -->
+
+        <!-- Page Features -->
+        <div class="row text-center">
+
+            <div class="col-md-4 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <div  class="drag-and-drop-img"></div>
+                    <img id="drag-and-drop-good-mood" src="@routes.Assets.versioned("images/good-mood.jpg")" class="img-responsive drag-and-drop" draggable="true" alt="A girl with a light">
+                    <div class="caption">
+                        <h3>Good mood</h3>
+                        <p class="text-success">Playlist to be exited</p>
+                        <hr>
+                        <table class="table">
+                            <tbody>
+								@for(song <- songs("good-mood")){
+									<tr><td>@song</td></tr>
+								}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <img id="drag-and-drop-cool-off" src="@routes.Assets.versioned("images/cool-off.jpg")" class="img-responsive drag-and-drop" draggable="true" alt="A beach">
+                    <div class="caption">
+                        <h3>Cool off</h3>
+                        <p class="text-info" >Playlist to relax</p>
+                        <hr>
+                        <table class="table">
+                            <tbody>
+                                @for(song <- songs("cool-off")){
+									<tr><td>@song</td></tr>
+								}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 hero-feature">
+                <div class="thumbnail">
+                    <img id="drag-and-drop-alarm-clock" src="@routes.Assets.versioned("images/alarm-clock.jpg")" class="img-responsive drag-and-drop" draggable="true" alt="An alarm clock">
+                    <div class="caption">
+                        <h3>Alarm clock</h3>
+                        <p class="text-warning">Playlist to wake up</p>
+                        <hr>
+                        <table class="table">
+                            <tbody>
+                                @for(song <- songs("alarm-clock")){
+									<tr><td>@song</td></tr>
+								}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /.row -->
+
+        <hr>
+
+        <!-- Footer -->
+        <footer>
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>Copyright &copy; Smart bedroom 2016</p>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+    <!-- /.container -->
+
+
+}

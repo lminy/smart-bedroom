@@ -1,0 +1,13 @@
+/*
+.drag-and-drop:hover
+{
+	border:4px dotted #0B85A1;
+	color:#92AAB0;
+	text-align:left;vertical-align:middle;
+	font-size:100%;
+}
+*/
+
+.drag-and-drop {
+	border: 4px solid transparent;
+}
