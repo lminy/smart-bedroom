@@ -1,0 +1,37 @@
+New log file opened at Sun Mar 06 21:59:46 CET 2016 by 2112@Lolo-Laptop
+Taking next connection to: 50002
+New client attempting to connect on port: 50003-50002
+  Address = /192.168.56.1:50002
+This client on port 50003 has uuid bf56760b-e5ac-4904-802c-f2e9a4250ace configName activator humanReadableName Activator protocolVersion 3 featureTags Vector()
+Connected Clients: activator-bf56760b-e5ac-4904-802c-f2e9a4250ace
+Taking next connection to: 50002
+New client attempting to connect on port: 50004-50002
+  Address = /192.168.56.1:50002
+Handshake exception on socket: 50004
+sbt.impl.ipc.HandshakeException: Unable to perform handshake
+	at sbt.impl.ipc.Peer.handshake(IPC.scala:46)
+	at sbt.impl.ipc.MultiClientServer.<init>(IPC.scala:150)
+	at sbt.server.SbtServerSocketHandler$$anon$1.run(SbtServerSocketHandler.scala:43)
+Caused by: java.net.SocketException: Software caused connection abort: recv failed
+	at java.net.SocketInputStream.socketRead0(Native Method)
+	at java.net.SocketInputStream.socketRead(SocketInputStream.java:116)
+	at java.net.SocketInputStream.read(SocketInputStream.java:170)
+	at java.net.SocketInputStream.read(SocketInputStream.java:141)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:246)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:265)
+	at java.io.DataInputStream.readInt(DataInputStream.java:387)
+	at sbt.impl.ipc.Peer.receive(IPC.scala:95)
+	at sbt.impl.ipc.Peer.handshake(IPC.scala:49)
+	... 2 more
+Taking next connection to: 50002
+New client attempting to connect on port: 50005-50002
+  Address = /192.168.56.1:50002
+This client on port 50005 has uuid dac9cb1d-a4af-4375-8681-0842cf8c8ff6 configName activator humanReadableName Activator protocolVersion 3 featureTags Vector()
+Connected Clients: activator-bf56760b-e5ac-4904-802c-f2e9a4250ace, activator-dac9cb1d-a4af-4375-8681-0842cf8c8ff6
+Taking next connection to: 50002
+Checking to see if clients are empty...
+No non-daemon clients connected after 3 min. Shutting down.
+Server socket thread exiting.
+0 clients open, will close them...
+All client sockets have been closed.
+Closing the 2112@Lolo-Laptop logs at Sun Mar 06 22:02:47 CET 2016, goodbye.
