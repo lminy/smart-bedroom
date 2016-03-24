@@ -15,6 +15,7 @@ GET     /playlists                  controllers.PlaylistsController.index
 
 POST    /playlists/:name            controllers.PlaylistsController.addSong(name)
 
+DELETE  /playlists/:name/:songName      controllers.PlaylistsController.removeSong(name, songName)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
