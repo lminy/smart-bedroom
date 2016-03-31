@@ -13,6 +13,8 @@ GET     /widgets/temp               controllers.WidgetsController.getTemp
 
 GET     /playlists                  controllers.PlaylistsController.index
 
+GET     /playlists/:name            controllers.PlaylistsController.getPlaylist(name)
+
 POST    /playlists/:name            controllers.PlaylistsController.addSong(name)
 
 DELETE  /playlists/:name/:songName      controllers.PlaylistsController.removeSong(name, songName)

@@ -1,0 +1,13 @@
+@*
+ * This template takes a single argument, a String containing a
+ * message to display.
+ *@
+@(playlists: Map[String,List[String]], name: String)
+
+<table id="table-@name" class="table">
+    <tbody>
+		@for(song <- playlists(name)){
+			<tr><td>@song <span class="remove glyphicon glyphicon-floppy-remove" style="color:#cf3838; display:none;" onclick="removeSong('@song', '@name')"></span></td></tr>
+		}
+    </tbody>
+</table>

@@ -1,12 +1,106 @@
-jQuery( document ).ready(function( $ ) {
 
-	var goodMood = $("#drag-and-drop-good-mood");
-	var coolOff = $("#drag-and-drop-cool-off");
-	var alarmClock = $("#drag-and-drop-alarm-clock");
 
-	var goodMoodDragAndDrop = new DragAndDrop(goodMood, "good-mood");
-	var coolOffDragAndDrop = new DragAndDrop(coolOff, "cool-off");
-	var alarmClockDragAndDrop = new DragAndDrop(alarmClock, "alarm-clock");
+
+function removeSong(songName, playlistName){
+	console.log("removeSong()");
+	var URL ="/playlists/" + playlistName + "/" + songName;
+	var $song = $(this);
+
+	$.ajax({
+		url: URL,
+		type: "DELETE",
+		success: function(result, status){
+			console.log("begin_remove");
+			showAlert("success", result);
+			//var $table = $song.parents(".table");
+			//alert($table);
+			refreshPlaylist(playlistName);
+			console.log("end_remove");
+		},
+		error: function(result, statut, error){showAlert("danger", result.responseText);}
+	});
+}
+
+function showAlert(type, message){
+
+	var notify = $.notify({
+		message: message
+	},{
+		type: type,
+		placement: {
+			from: "top",
+			align: "center"
+		}
+	});
+
+	//notify.update({'progress': 50});
+	//notify.update({'type': 'success', 'message': '<strong>Success</strong> Your page has been saved!', 'progress': 25});
+
+	/*
+	$("#alert > .alert").alert('close');
+	$("#alert").html("<div class='alert alert-" + type + "' role='alert'>\
+						" + message + "\
+						<button type='button' class='close' data-dismiss='alert' aria-label='Close'>\
+							<span aria-hidden='true'>&times;</span>\
+						</button>\
+					</div>");*/
+}
+
+function refreshPlaylist(name){
+	var $table = $("#table-" + name);
+	var URL ="/playlists/" + name;
+
+	var $parent = $table.parent();
+	$table.remove();
+
+	$.ajax({
+		url: URL,
+		type: "GET",
+		success: function(result, status){
+			$parent.append(result);
+		},
+		error: function(result, statut, error){showAlert("danger", result.responseText);}
+	});
+}
+
+jQuery(document).ready(function($) {
+
+	//$.notify("Hello World");
+/*
+	$.notify({
+		title: '<strong>Heads up!</strong>',
+		message: 'You can use any of bootstraps other alert styles as well by default.'
+	},{
+		type: 'success',
+		placement: {
+			from: "top",
+			align: "center"
+		}
+	},);
+/*
+	$.notify('<strong>Saving</strong> Do not close this page...', {
+	   type: 'success',
+	   allow_dismiss: false,
+	   showProgressbar: true
+   });*/
+
+	$(document).on("mouseenter", "td", function(){
+		$(this).find(".remove").show();
+	}).on("mouseleave", "td", function(){
+		$(this).find(".remove").hide();
+	});
+
+
+
+	var $goodMood = $("#drag-and-drop-good-mood");
+	var $coolOff = $("#drag-and-drop-cool-off");
+	var $alarmClock = $("#drag-and-drop-alarm-clock");
+
+	var goodMoodDragAndDrop = new DragAndDrop($goodMood, "good-mood");
+	var coolOffDragAndDrop = new DragAndDrop($coolOff, "cool-off");
+	var alarmClockDragAndDrop = new DragAndDrop($alarmClock, "alarm-clock");
+
+
 
 	function DragAndDrop(zone, playlist) {
 
@@ -23,7 +117,7 @@ jQuery( document ).ready(function( $ ) {
 
 		zone.on('dragenter', function (e)
 		{
-			console.log("zone.dragenter");
+			//console.log("zone.dragenter");
 		    e.stopPropagation();
 		    e.preventDefault();
 			/*
@@ -33,32 +127,31 @@ jQuery( document ).ready(function( $ ) {
 		});
 		zone.on('dragover', function (e)
 		{
-		     e.stopPropagation();
-		     e.preventDefault();
-			 var src = zone.attr("src").match(/[^\.\_]+/) + "_over.jpg";
+		    e.stopPropagation();
+		    e.preventDefault();
+			var src = zone.attr("src").match(/[^\.\_]+/) + "_drop.jpg";
  			zone.attr("src", src);
  			$(this).css('border', '4px solid #0B85A1');
 		});
 		zone.on('dragleave', function (e)
 		{
-			console.log("zone.dragleave");
-		     e.stopPropagation();
-		     e.preventDefault();
-			 //$(this).css('border', '4px dotted #0B85A1');
+			//console.log("zone.dragleave");
+		    e.stopPropagation();
+		    e.preventDefault();
+			//$(this).css('border', '4px dotted #0B85A1');
 		});
 		zone.on('drop', function (e)
 		{
-			console.log("zone.drop");
-		     e.preventDefault();
-		     var files = e.originalEvent.dataTransfer.files;
+			//console.log("zone.drop");
+		    e.preventDefault();
+		    var files = e.originalEvent.dataTransfer.files;
 
-			 var src = zone.attr("src").replace("_over.jpg", ".jpg");
-             zone.attr("src", src);
-
+			var src = zone.attr("src").replace("_over.jpg", ".jpg");
+            zone.attr("src", src);
 			zone.css('border', '4px solid transparent');
 
-		     //We need to send dropped files to Server
-		     handleFileUpload(files,zone);
+		    //We need to send dropped files to Server
+		    handleFileUpload(files,zone);
 		});
 
 
@@ -67,7 +160,7 @@ jQuery( document ).ready(function( $ ) {
 
 		$(document).on('dragenter', function (e)
 		{
-			console.log("doc.dragenter");
+			//console.log("doc.dragenter");
 			/*
 			var src = zone.attr("src").match(/[^\.\_]+/) + "_over.jpg";
 			zone.attr("src", src);
@@ -78,11 +171,11 @@ jQuery( document ).ready(function( $ ) {
 		});
 		$(document).on('dragover', function (e)
 		{
-		  e.stopPropagation();
-		  e.preventDefault();
-		  var src = zone.attr("src").match(/[^\.\_]+/) + "_over.jpg";
-		 zone.attr("src", src);
-		  zone.css('border', '4px dotted #0B85A1');
+			e.stopPropagation();
+			e.preventDefault();
+			var src = zone.attr("src").match(/[^\.\_]+/) + "_over.jpg";
+			zone.attr("src", src);
+			zone.css('border', '4px dotted #0B85A1');
 		});
 		$(document).on('drop', function (e)
 		{
@@ -98,14 +191,14 @@ jQuery( document ).ready(function( $ ) {
 
 		$(document).on('dragleave', function (e)
 		{
-			console.log("doc.dragleave");
-		     e.stopPropagation();
-		     e.preventDefault();
+			//console.log("doc.dragleave");
+			e.stopPropagation();
+			e.preventDefault();
 
-			 var src = zone.attr("src").replace("_over.jpg", ".jpg");
-             zone.attr("src", src);
+			var src = zone.attr("src").replace("_over.jpg", ".jpg");
+			zone.attr("src", src);
 
-			 zone.css('border', '4px solid transparent');
+			zone.css('border', '4px solid transparent');
 		});
 
 
@@ -145,6 +238,20 @@ jQuery( document ).ready(function( $ ) {
 		    }
 		}
 
+		function createProgressAlert(type, message){
+
+			return $.notify({
+				message: message
+			},{
+				type: type,
+				showProgressbar: true,
+				placement: {
+					from: "top",
+					align: "center"
+				}
+			});
+		}
+
 
 
 		function handleFileUpload(files,zone)
@@ -154,21 +261,26 @@ jQuery( document ).ready(function( $ ) {
 		        var fd = new FormData();
 		        fd.append('song', files[i]);
 
-		        var status = new createStatusbar(zone); //Using this we can set progress.
+		        var status/* = new createStatusbar(zone); //Using this we can set progress.
 		        status.setFileNameSize(files[i].name);
+*/
+				var notify = createProgressAlert('warning',"Playlist " + playlist + " : adding song " + files[i].name);
 
-		        sendFileToServer(fd,status);
+		        sendFileToServer(fd,status, notify);
 
 		   }
 		}
 
 
 
-		function sendFileToServer(formData,status)
+		function sendFileToServer(formData, status, notify)
 		{
 		    var uploadURL ="/playlists/" + playlist; //Upload URL
 		    var extraData ={}; //Extra Data.
-		    var jqXHR=$.ajax({
+
+			//notify.update({'progress': 50});
+
+			var jqXHR=$.ajax({
 		            xhr: function() {
 		            var xhrobj = $.ajaxSettings.xhr();
 		            if (xhrobj.upload) {
@@ -180,7 +292,8 @@ jQuery( document ).ready(function( $ ) {
 		                            percent = Math.ceil(position / total * 100);
 		                        }
 		                        //Set progress
-		                        status.setProgress(percent);
+		                        //status.setProgress(percent);
+								notify.update({'progress': percent});
 		                    }, false);
 		                }
 		            return xhrobj;
@@ -191,19 +304,27 @@ jQuery( document ).ready(function( $ ) {
 		        processData: false,
 		        cache: false,
 		        data: formData,
-		        success: function(result, status){
-					//alert("resultat : " + result);
-		            status.setProgress(100);
+		        success: function(result, statut){
+					//showAlert("success", result);
+					refreshPlaylist(playlist);
+					//status.setProgress(100);
+					notify.update({'type': 'success', 'message': result, 'progress': 100});
 		            //$("#status1").append("File upload Done<br>");
 		        },
-				error: function(result, statut, error){alert('error : ' + result + " status : " + status + " error : " +error);},
+				error: function(result, statut, error){
+					//showAlert("danger", result.responseText);
+					notify.update({'type': 'danger', 'delay':0, 'showProgressbar':false, 'message': result.responseText, 'progress': 0});
+				}
 		    });
 
-		    status.setAbort(jqXHR);
+			notify.update('test', {onClose: function(){
+				alert('abort');
+				jqXHR.abort();
+			}});
+
+		    //status.setAbort(jqXHR);
 		}
 	}
-
-
 
 
 	console.log("End App.js");
