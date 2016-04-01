@@ -1,13 +1,3 @@
-/*
-.drag-and-drop:hover
-{
-	border:4px dotted #0B85A1;
-	color:#92AAB0;
-	text-align:left;vertical-align:middle;
-	font-size:100%;
-}
-*/
-
 .drag-and-drop {
 	border: 4px solid transparent;
 }
@@ -21,4 +11,10 @@
 	left: 0px;
 	width: 100%;
 	height: 5px;
+}
+
+.hiddenfile {
+ width: 0px;
+ height: 0px;
+ overflow: hidden;
 }
