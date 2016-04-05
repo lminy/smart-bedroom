@@ -17,3 +17,16 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 
 fork in run := true
+
+// Added for debian package - LM
+
+/*
+lazy val root = (project in file(".")).enablePlugins(PlayScala, DebianPlugin)
+
+maintainer in Linux := "Laurent Miny <laurent.miny@student.unamur.be>"
+
+packageSummary in Linux := "Smart Bedroom"
+
+packageDescription := "Smart Bedroom is a prototype"
+
+*/

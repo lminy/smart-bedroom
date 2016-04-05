@@ -99,12 +99,14 @@ function sendFileToServer(formData, playlist, filename)
 		data: formData,
 		success: function(result, statut){
 			refreshPlaylist(playlist);
-			notify.update({'type': 'success', 'message': result, 'progress': 100});
+			notify.update({'progress': 100});
+			notify.close();
+			showAlert("success", result);
 		},
 		error: function(result, statut, error){
 			notify.close();
-			if(statut = 413){
-				showAlert("danger", "The song is too big (max 100MB)");
+			if(error == "Request Entity Too Large"){ // error 413
+				showAlert("danger", "The song " + filename + " is too big (max 100MB)");
 			}else{
 				showAlert("danger", result.responseText);
 			}

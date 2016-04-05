@@ -70,7 +70,7 @@ class PlaylistsController @Inject() extends Controller {
             val filename = normalize(song.filename);
 
             def moveSong(): Result = {
-                song.ref.moveTo(new File(s"E:/Projects/Mobile/$playlist/$filename"))
+                song.ref.moveTo(new File(s"${playlists(playlist)}/$filename"))
                 Created(s"Playlist $playlist : $filename added")
             }
             if(!(playlists contains playlist)){
@@ -100,4 +100,9 @@ class PlaylistsController @Inject() extends Controller {
             NotFound("The song or the playlist don't exist")
         }
     }
+
+    def startPlaylist(name: String) = Action {
+        Ok(s"Playing the playlist $name")
+    }
+
 }
