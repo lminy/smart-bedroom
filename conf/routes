@@ -17,7 +17,14 @@ GET     /playlists/:name            controllers.PlaylistsController.getPlaylist(
 
 POST    /playlists/:name            controllers.PlaylistsController.addSong(name)
 
-POST     /playlists/:name/play       controllers.PlaylistsController.startPlaylist(name)
+POST    /playlists/:name/play       controllers.PlaylistsController.startPlaylist(name)
+
+POST    /playlists/:name/pause      controllers.PlaylistsController.pausePlaylist(name)
+
+POST    /playlists/:name/resume     controllers.PlaylistsController.resumePlaylist(name)
+
+POST    /playlists/:name/stop       controllers.PlaylistsController.stopPlaylist(name)
+
 
 DELETE  /playlists/:name/:songName      controllers.PlaylistsController.removeSong(name, songName)
 

@@ -22,6 +22,8 @@ import actors._
 @Singleton
 class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
 
+    val player = system.actorSelection("user/player")
+
     ///////////////
     // FUNCTIONS //
     ///////////////
@@ -111,8 +113,22 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     }
 
     def startPlaylist(name: String) = Action {
-        val player = system.actorSelection("user/player")
         player ! PlayerActor.Play(Playlist(name))
+        Ok("OK!")
+    }
+
+    def pausePlaylist(name: String) = Action {
+        player ! PlayerActor.Pause()
+        Ok("OK!")
+    }
+
+    def resumePlaylist(name: String) = Action {
+        player ! PlayerActor.Resume()
+        Ok("OK!")
+    }
+
+    def stopPlaylist(name: String) = Action {
+        player ! PlayerActor.Stop()
         Ok("OK!")
     }
 

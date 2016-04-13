@@ -38,12 +38,12 @@ class PlayerActor extends Actor {
     }
 
     def playing: Receive = {
-        case Stop => {
+        case Stop() => {
             PausablePlayer.stop()
             context become stopped
         }
 
-        case Pause => {
+        case Pause() => {
             PausablePlayer.stop()
             context become paused
         }
@@ -55,12 +55,12 @@ class PlayerActor extends Actor {
     }
 
     def paused: Receive = {
-        case Resume => {
+        case Resume() => {
             PausablePlayer.resume()
             context become playing
         }
 
-        case Stop => {
+        case Stop() => {
             PausablePlayer.stop()
             context become stopped
         }
