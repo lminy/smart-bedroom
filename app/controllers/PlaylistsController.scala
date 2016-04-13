@@ -4,6 +4,8 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 
+import akka.actor._
+
 import java.io.File
 import scala.collection.JavaConversions._
 
@@ -15,8 +17,10 @@ import java.io.FileInputStream;
 
 import javazoom.jl.player.Player;
 
+import actors._
+
 @Singleton
-class PlaylistsController @Inject() extends Controller {
+class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
 
     ///////////////
     // FUNCTIONS //
@@ -107,24 +111,9 @@ class PlaylistsController @Inject() extends Controller {
     }
 
     def startPlaylist(name: String) = Action {
-        //Ok(s"Playing the playlist $name")
-        Logger.debug(s"Playing the playlist $name ... :)")
-        //val result = playSong("E:/Projects/Mobile/cool-off/FelixJaehn.mp3")
-
+        val player = system.actorSelection("user/player")
+        player ! PlayerActor.Play(Playlist(name))
         Ok("OK!")
     }
-
-    def playSong(path: String) = {
-		val file = new File(path)
-		val in = new FileInputStream(file.getAbsoluteFile)
-		val input = new BufferedInputStream(in)
-		val player = new Player(input) // jl1.0.jar (JLayer Mp3 library) http://www.javazoom.net/javalayer/sources.html
-		player.play()
-/*
-        while(true){
-			player.play(1)
-		}
-*/
-	}
 
 } // END Playlist Controller

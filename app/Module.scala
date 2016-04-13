@@ -3,6 +3,8 @@ import java.time.Clock
 
 import services.{ApplicationTimer, AtomicCounter, Counter}
 
+import actors.Actors
+
 /**
  * This class is a Guice module that tells Guice how to bind several
  * different types. This Guice module is created when the Play
@@ -21,6 +23,10 @@ class Module extends AbstractModule {
     // Ask Guice to create an instance of ApplicationTimer when the
     // application starts.
     bind(classOf[ApplicationTimer]).asEagerSingleton
+
+    // To create the actors
+    bind(classOf[Actors]).asEagerSingleton
+
     // Set AtomicCounter as the implementation for Counter.
     bind(classOf[Counter]).to(classOf[AtomicCounter])
   }
