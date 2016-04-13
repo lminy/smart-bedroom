@@ -18,6 +18,11 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 fork in run := true
 
+// LM
+
+libraryDependencies += "javazoom" % "jlayer" % "1.0.1"
+
+
 // Added for debian package - LM
 
 /*
