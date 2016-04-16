@@ -114,6 +114,7 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
 
     def startPlaylist(name: String) = Action {
         player ! PlayerActor.Play(Playlist(name))
+        //interfaceKit ! 21
         Ok("OK!")
     }
 

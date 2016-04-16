@@ -23,6 +23,7 @@ object PlayerActor {
 
     case class Play(playable: Playable) extends Message
     case class Stop() extends Message
+    case class StopAlarm() extends Message
     case class Pause() extends Message
     case class Resume() extends Message
 }
@@ -41,6 +42,16 @@ class PlayerActor extends Actor {
         case Stop() => {
             PausablePlayer.stop()
             context become stopped
+        }
+
+        case StopAlarm() => {
+            PausablePlayer.getPlayable match {
+                case Playlist(name) if name == "alarm-clock" => {
+                    PausablePlayer.stop()
+                    context become stopped
+                }
+                case _ => {/* IGNORE STOP */}
+            }
         }
 
         case Pause() => {
@@ -65,6 +76,16 @@ class PlayerActor extends Actor {
             context become stopped
         }
 
+        case StopAlarm() => {
+            PausablePlayer.getPlayable match {
+                case Playlist(name) if name == "alarm-clock" => {
+                    PausablePlayer.stop()
+                    context become stopped
+                }
+                case _ => {/* IGNORE STOP */}
+            }
+        }
+
         case Play(playable: Playable) => {
             PausablePlayer.stop()
             println("Stop & Playing...")
@@ -81,8 +102,12 @@ object PausablePlayer {
     var thread: Thread = _
     var halt = false
     var remainingSongs: Queue[Song] = _
+    var playable:Playable = _
+
+    def getPlayable = playable
 
     def play(playable: Playable){
+        this.playable = playable
         playable match {
             case song: Song         => remainingSongs = Queue(song)
             case playlist: Playlist => remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
@@ -138,18 +163,11 @@ object PausablePlayer {
 
 abstract class Playable
 
-class Song(name: String, path: String) extends Playable {
+case class Song(name: String, path: String) extends Playable {
     def filename = path
-
-    override def toString() = s"name: $name path: $path"
 }
 
-// Companion object
-object Song {
-    def apply(name: String, path: String) = new Song(name: String, path: String)
-}
-
-class Playlist(name: String) extends Playable {
+case class Playlist(name: String) extends Playable {
     val paths = Map("good-mood" -> "E:/Projects/Mobile/good-mood/",
                     "cool-off"  -> "E:/Projects/Mobile/cool-off/",
                     "alarm-clock" -> "E:/Projects/Mobile/alarm-clock/")
@@ -166,9 +184,4 @@ class Playlist(name: String) extends Playable {
     def songs: List[Song] = getListOfFiles(paths(name)).filter(_.getName().endsWith(".mp3")).map(
         file => new Song(file.getName(), file.getAbsolutePath())
     )
-}
-
-// Companion object
-object Playlist {
-    def apply(name:String) = new Playlist(name)
 }
