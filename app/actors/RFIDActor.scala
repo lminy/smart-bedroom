@@ -89,19 +89,15 @@ class RFIDActor() extends Actor {
         }
     })
 
-    def changeMode(i: Int) {
-        interfaceKit ! i
-    }
-
     def changeTag(id: String) {
         if (id.equalsIgnoreCase("4a003749b0")) {
-            changeMode(5)
+            interfaceKit ! 5
         }
         else if (id.equalsIgnoreCase("4a003726cb")) {
-            changeMode(6)
+            interfaceKit ! 6
         }
         else if (id.equalsIgnoreCase("2800b87ac5")) {
-            changeMode(7)
+            interfaceKit ! 7
         }
         else if (id.equalsIgnoreCase("5c005e3598")) {
             println("Snooze")
