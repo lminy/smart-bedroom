@@ -60,7 +60,7 @@ class PlayerActor extends Actor {
         }
         case Play(playable: Playable) => {
             PausablePlayer.stop()
-            println("Stop & Playing...")
+            //println("Stop & Playing...")
             PausablePlayer.play(playable)
         }
     }
@@ -88,7 +88,7 @@ class PlayerActor extends Actor {
 
         case Play(playable: Playable) => {
             PausablePlayer.stop()
-            println("Stop & Playing...")
+            //println("Stop & Playing...")
             PausablePlayer.play(playable)
         }
     }
@@ -120,7 +120,7 @@ object PausablePlayer {
     def playInternal() {
         halt = false
 
-        println("Playing...")
+        //println("Playing...")
 
         // Play first song
         var end = false

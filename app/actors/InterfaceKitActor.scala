@@ -20,22 +20,21 @@ import com.phidgets.event.SensorChangeListener
 
 import actors._
 
-object InterfaceKitActor {
-    def props = Props[InterfaceKitActor]
-
-    abstract class Message
-    /*
-    case class Play(playable: Playable) extends Message
-    case class Stop() extends Message
-    case class Pause() extends Message
-    case class Resume() extends Message*/
-}
-
 class InterfaceKitActor extends Actor{
+    import InterfaceKitActor._
 
     val player = context.actorSelection("../player")
 
+    var inputs = Array(false,false,false,false,false,false,false,false)
+
+    val sounds = Map(0    -> "E:/Projects/Mobile/simon-game/cat.mp3",
+					 1   -> "E:/Projects/Mobile/simon-game/dog.mp3",
+					 2 -> "E:/Projects/Mobile/simon-game/cow.mp3",
+					 3  -> "E:/Projects/Mobile/simon-game/pig.mp3"
+	)
+
     private val ifk = new InterfaceKitPhidget()
+    private var ifkConnected = false
 
     println("creating interfaceKit...")
 
@@ -43,12 +42,15 @@ class InterfaceKitActor extends Actor{
 
         def attached(ae: AttachEvent) {
             println("attachment of " + ae)
+            ifkConnected = true
         }
     })
     ifk.addDetachListener(new DetachListener() {
 
         def detached(ae: DetachEvent) {
             println("detachment of " + ae)
+            ifkConnected = false
+            tryToReconnect()
         }
     })
     ifk.addErrorListener(new ErrorListener() {
@@ -60,7 +62,11 @@ class InterfaceKitActor extends Actor{
     ifk.addInputChangeListener(new InputChangeListener() {
 
         def inputChanged(oe: InputChangeEvent) {
-            //println(oe)
+            //println(s"input ${oe.getIndex} : ${oe.getState}")
+            inputs(oe.getIndex) = true
+            if(oe.getState == false && sounds.contains(oe.getIndex)){
+                player ! PlayerActor.Play(Song(sounds(oe.getIndex), sounds(oe.getIndex)))
+            }
         }
     })
     ifk.addOutputChangeListener(new OutputChangeListener() {
@@ -96,10 +102,26 @@ class InterfaceKitActor extends Actor{
             Thread.sleep(200)
         }
     })
+    try{
+        ifk.openAny()
+        ifk.waitForAttachment(10000)
+    }catch{
+        case ex:PhidgetException => tryToReconnect()
+    }
 
-    ifk.openAny()
-    ifk.waitForAttachment(10000)
-
+    def tryToReconnect(){
+        ifkConnected = false
+        while(!ifkConnected){
+            Thread.sleep(1000)
+            try{
+                ifk.openAny()
+                ifk.waitForAttachment(10000)
+                ifkConnected = true
+            }catch{
+                case ex:PhidgetException => {}
+            }
+        }
+    }
 
     def changeColor(i:Int){
         println("Message reçu: "+i)
@@ -110,10 +132,77 @@ class InterfaceKitActor extends Actor{
         println("Lumière "+i+" selectionée")
     }
 
+    def turnOffAll(){
+        for(index <- 0 to 7){
+            ifk.setOutputState(index, false)
+        }
+        //println("All leds turned off")
+    }
+
+    def turnOn(index: Int){
+        ifk.setOutputState(index, true)
+        //println(s"Led $index turned on")
+    }
+
+    def turnOff(index: Int){
+        ifk.setOutputState(index, false)
+        //println(s"Led $index turned off")
+    }
+
+    def resetInputs(){
+        inputs = inputs.map(_=>false)
+    }
+    def isThereInput = inputs.foldLeft(false){_||_}
+    def indexLastInput = inputs.indexOf(true)
+
+    // Wait max 5 seconds
+    def waitInput(){
+        println("Waiting input")
+        resetInputs()
+        var i = 1
+        while(i <= 5*5 && !isThereInput){
+            Thread.sleep(200)
+            i = i+1
+        }
+        if(isThereInput){
+            //println(s"button $indexLastInput pushed")
+            sender ! Some(indexLastInput)
+        }else{
+            //println(s"no button pushed...")
+            sender ! None
+        }
+    }
+
     def receive = {
-        case 5 => changeColor(5)
+        /*case 5 => changeColor(5)
         case 6 => changeColor(6)
-        case 7 => changeColor(7)
+        case 7 => changeColor(7)*/
+        case TurnOffAll() => turnOffAll()
+        case TurnOn(index) => turnOn(index)
+        case TurnOff(index) => turnOff(index)
+        case WaitInput() => waitInput()
         case _ => println("Nothing to do")
     }
+}
+
+object InterfaceKitActor {
+    def props = Props[InterfaceKitActor]
+
+    abstract class Message
+
+    case class TurnOffAll() extends Message
+    case class TurnOn(index: Int) extends Message
+    case class TurnOff(index: Int) extends Message
+    case class WaitInput() extends Message
+/*
+    val master = ActorSystem("SmartHome")
+    val interfaceKit = master.actorOf(InterfaceKitActor.props, name = "interfaceKit")
+
+    def main(args: Array[String]):Unit = {
+        Thread.sleep(2000)
+        println("Start Main")
+        interfaceKit ! TurnOffAll()
+        interfaceKit ! TurnOn(0)
+        println("End Main")
+    }*/
 }
