@@ -23,6 +23,10 @@ import com.phidgets.event.TagGainListener
 import com.phidgets.event.TagLossEvent
 import com.phidgets.event.TagLossListener
 
+import scala.concurrent.duration._
+
+import play.api.libs.concurrent.Execution.Implicits._
+
 object RFIDActor {
     def props = Props[RFIDActor]
 
@@ -35,11 +39,12 @@ object RFIDActor {
 }
 
 class RFIDActor() extends Actor {
+    import InterfaceKitActor._
 
-    val rfidPh:RFIDPhidget = new RFIDPhidget();
+    val rfidPh:RFIDPhidget = new RFIDPhidget()
 
-    val player = context.actorSelection("user/player")
-    val interfaceKit = context.actorSelection("user/interfaceKit")
+    val player = context.actorSelection("../player")
+    val interfaceKit = context.actorSelection("../interfaceKit")
 
     //Valeur permettant de savoir si le rfid est connecter et OK
     var temprfid = 0
@@ -71,7 +76,7 @@ class RFIDActor() extends Actor {
     rfidPh.addTagGainListener(new TagGainListener() {
 
         def tagGained(oe: TagGainEvent) {
-            //println(oe.getValue)
+            println(oe.getValue)
             changeTag(oe.getValue)
             rfidPh.setLEDOn(false)
         }
@@ -91,17 +96,27 @@ class RFIDActor() extends Actor {
 
     def changeTag(id: String) {
         if (id.equalsIgnoreCase("4a003749b0")) {
-            interfaceKit ! 5
+            interfaceKit ! TurnOffAll()
+            interfaceKit ! TurnOn(0)
         }
         else if (id.equalsIgnoreCase("4a003726cb")) {
-            interfaceKit ! 6
+            interfaceKit ! TurnOffAll()
+            interfaceKit ! TurnOn(1)
         }
         else if (id.equalsIgnoreCase("2800b87ac5")) {
-            interfaceKit ! 7
+            interfaceKit ! TurnOffAll()
+            interfaceKit ! TurnOn(2)
         }
         else if (id.equalsIgnoreCase("5c005e3598")) {
             println("Snooze")
-            player ! PlayerActor.Pause()
+            player ! PlayerActor.PauseAlarm()
+            //context.system.scheduler.scheduleOnce(10 seconds, player, PlayerActor.Resume())
+            context.system.scheduler.scheduleOnce(10 seconds) {
+                player ! PlayerActor.Resume()
+            }
+        }
+        else if (id.equalsIgnoreCase("700082406f")) {
+            interfaceKit ! TurnOffAll()
         }
     }
 

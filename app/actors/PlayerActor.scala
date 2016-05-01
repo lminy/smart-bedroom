@@ -24,6 +24,7 @@ object PlayerActor {
     case class Play(playable: Playable) extends Message
     case class Stop() extends Message
     case class StopAlarm() extends Message
+    case class PauseAlarm() extends Message
     case class Pause() extends Message
     case class Resume() extends Message
 }
@@ -54,8 +55,18 @@ class PlayerActor extends Actor {
             }
         }
 
+        case PauseAlarm() => {
+            PausablePlayer.getPlayable match {
+                case Playlist(name) if name == "alarm-clock" => {
+                    PausablePlayer.pause()
+                    context become paused
+                }
+                case _ => {/* IGNORE STOP */}
+            }
+        }
+
         case Pause() => {
-            PausablePlayer.stop()
+            PausablePlayer.pause()
             context become paused
         }
         case Play(playable: Playable) => {
@@ -109,8 +120,23 @@ object PausablePlayer {
     def play(playable: Playable){
         this.playable = playable
         playable match {
-            case song: Song         => remainingSongs = Queue(song)
-            case playlist: Playlist => remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
+            case song: Song         => {
+                remainingSongs = Queue(song)
+                println(s"Song  :")
+                for( song <- remainingSongs.toList){
+                    println(song.toString)
+                }
+                println(s"End song")
+            }
+            case playlist: Playlist => {
+                remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
+
+                println(s"Playlist $playlist :")
+                for( song <- remainingSongs.toList){
+                    println(song.toString)
+                }
+                println(s"End $playlist")
+            }
         }
 
         player =  new Player(new BufferedInputStream(new FileInputStream(remainingSongs.dequeue.filename)))
@@ -127,18 +153,27 @@ object PausablePlayer {
         while (!end && !halt) {
             end = !player.play(1)
         }
+        println(s"end song 1")
 
         // Play remaining songs if any
         while(!halt && !remainingSongs.isEmpty) {
+            player.close()
             player =  new Player(new BufferedInputStream(new FileInputStream(remainingSongs.dequeue.filename)))
             var end = false
             while (!end && !halt) {
                 end = !player.play(1)
             }
         }
+        if(!halt) player.close() // Only if end of queue but not when pause
     }
 
-    def stop() { // Or Pause don't do player.stop()
+    def stop() {
+        halt = true
+        thread.join()
+        player.close()
+    }
+
+    def pause() {
         halt = true
         thread.join()
     }
@@ -168,9 +203,7 @@ case class Song(name: String, path: String) extends Playable {
 }
 
 case class Playlist(name: String) extends Playable {
-    val paths = Map("good-mood" -> "E:/Projects/Mobile/good-mood/",
-                    "cool-off"  -> "E:/Projects/Mobile/cool-off/",
-                    "alarm-clock" -> "E:/Projects/Mobile/alarm-clock/")
+    import controllers.PlaylistsController._
 
     private def getListOfFiles(dir: String): List[File] = {
         val d = new File(dir)
@@ -181,7 +214,7 @@ case class Playlist(name: String) extends Playable {
         }
     }
 
-    def songs: List[Song] = getListOfFiles(paths(name)).filter(_.getName().endsWith(".mp3")).map(
+    def songs: List[Song] = getListOfFiles(playlists(name)).filter(_.getName().endsWith(".mp3")).map(
         file => new Song(file.getName(), file.getAbsolutePath())
     )
 }

@@ -19,23 +19,21 @@ import javazoom.jl.player.Player;
 
 import actors._
 
-@Singleton
-class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
-
-    val player = system.actorSelection("user/player")
+object PlaylistsController{
 
     ///////////////
     // FUNCTIONS //
     ///////////////
+
+    def playlists: Map[String, String] = (for{
+        configuration <- play.Play.application.configuration.getConfigList("playlists")
+    } yield (configuration.getString("name"), configuration.getString("path"))).toMap
 
 /*
     val playlists = Map("good-mood" -> "E:/Projects/Mobile/good-mood",
                         "cool-off"  -> "E:/Projects/Mobile/cool-off",
                         "alarm-clock" -> "E:/Projects/Mobile/alarm-clock")
 */
-    def playlists: Map[String, String] = (for{
-        configuration <- play.Play.application.configuration.getConfigList("playlists")
-    } yield (configuration.getString("name"), configuration.getString("path"))).toMap
 
     def maxDiskBufferHumanReadable: String = play.Play.application.configuration.getString("play.http.parser.maxDiskBuffer")
 
@@ -58,7 +56,14 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     }
 
     def normalize(filename: String):String = filename.replaceAll("[^a-zA-Z0-9\\s\\._-]+", "")
+}
 
+@Singleton
+class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
+
+    import PlaylistsController._
+
+    val player = system.actorSelection("user/player")
 
     ///////////////////
     // HTTP HANDLERS //
@@ -71,9 +76,9 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     def getPlaylist(name: String) = Action {
         if(playlists.keys contains name){
             Ok(views.html.playlist(listSongs,name))
-        }else
+        }else{
             NotFound("The playlist you requested doesn't exist")
-
+        }
     }
 
     def addSong(playlist: String) = Action(parse.multipartFormData) { request =>

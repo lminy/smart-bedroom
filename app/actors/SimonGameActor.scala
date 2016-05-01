@@ -21,31 +21,14 @@ import scala.language.postfixOps
 
 case class Button(color: Int)
 
+import controllers.GamesController._
+
+import collection.JavaConversions._
+
 // Interaction - VIEW
 class ButtonsManager(player: ActorSelection, interfaceKit: ActorSelection){
 
-/*
-val sounds = Map("red"    -> "E:/Projects/Mobile/simon-game/cat.mp3",
-				 "blue"   -> "E:/Projects/Mobile/simon-game/dog.mp3",
-				 "yellow" -> "E:/Projects/Mobile/simon-game/cow.mp3",
-				 "green"  -> "E:/Projects/Mobile/simon-game/pig.mp3"
-)
-
- */
-
-	val sounds = Map(0    -> "E:/Projects/Mobile/simon-game/cat.mp3",
-					 1   -> "E:/Projects/Mobile/simon-game/dog.mp3",
-					 2 -> "E:/Projects/Mobile/simon-game/cow.mp3",
-					 3  -> "E:/Projects/Mobile/simon-game/pig.mp3"
-	)
-/*
-	val color = Map(0 -> "green",
-					1 -> "red",
-					2 -> "yellow",
-					3-> "blue"
-	)
-*/
-	def colors: List[Int] = sounds.keys.toList
+    def colors: List[Int] = sounds.keys.toList
 
 	def askButton(): Button = {
 
@@ -67,11 +50,6 @@ val sounds = Map("red"    -> "E:/Projects/Mobile/simon-game/cat.mp3",
 	}
 
 	def playSound(color: Int) {
-	/*
-		val input = new BufferedInputStream(new FileInputStream(new File(path)))
-		val player = new Player(input)
-		player.play()*/
-
 		player ! PlayerActor.Play(Song(color.toString, sounds(color)))
 		interfaceKit ! InterfaceKitActor.TurnOffAll()
 		interfaceKit ! InterfaceKitActor.TurnOn(color)
@@ -80,14 +58,8 @@ val sounds = Map("red"    -> "E:/Projects/Mobile/simon-game/cat.mp3",
 	}
 }
 
-class SimonGameActor extends Actor {
-
-	val player = context.actorSelection("../player")
-	val interfaceKit = context.actorSelection("../interfaceKit")
-
-	val ButtonsManager = new ButtonsManager(player, interfaceKit)
-
-	val buttons:List[Button] = ButtonsManager.colors.map(Button(_))
+class SimonGame(buttonsManager: ButtonsManager) {
+	val buttons:List[Button] = buttonsManager.colors.map(Button(_))
 
 	val infiniteSequence: Stream[Button] = buttonsGen
 
@@ -96,7 +68,7 @@ class SimonGameActor extends Actor {
 	//Retourne le score
 	private def play(size: Int): Int = {
 		val sequence = infiniteSequence.take(size).toList
-		ButtonsManager.showSequence(sequence)
+		buttonsManager.showSequence(sequence)
 		completeSequence(sequence) match {
 			case true => play(size + 1)
 			case false => size - 1
@@ -105,7 +77,7 @@ class SimonGameActor extends Actor {
 
 	private def completeSequence(sequence: List[Button]): Boolean = sequence match {
 		case Nil => true
-		case x::xs if ButtonsManager.askButton() == x => {
+		case x::xs if buttonsManager.askButton() == x => {
 			Thread.sleep(1000)
 			completeSequence(xs)
 		}
@@ -116,15 +88,22 @@ class SimonGameActor extends Actor {
 		val rnd = new scala.util.Random
 		buttons(rnd.nextInt(buttons length)) #:: buttonsGen
 	}
+}
+
+class SimonGameActor extends Actor {
+	val player = context.actorSelection("../player")
+	val interfaceKit = context.actorSelection("../interfaceKit")
+
+	val buttonsManager = new ButtonsManager(player, interfaceKit)
 
 	def receive = {
 		case SimonGameActor.Play() => {
-			val score = start()
-			player ! PlayerActor.Play(Song("Game over", "E:/Projects/Mobile/simon-game/coins.mp3"))
+			val game = new SimonGame(buttonsManager)
+			val score = game.start()
+			player ! PlayerActor.Play(Song("Game over", endGameSound))
 			println(s"Game Over :(         Score: $score")
 		}
 	}
-
 }
 
 object SimonGameActor {
