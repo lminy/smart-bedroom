@@ -27,7 +27,11 @@ class InterfaceKitActor extends Actor{
 
     val player = context.actorSelection("../player")
 
-    var inputs = Array(false,false,false,false,false,false,false,false)
+    // INPUTS :
+    // 0 : initial initial state
+    // 1 : Bouton pressed
+    // 2 : Bouton released
+    var inputs = Array(0,0,0,0,0,0,0,0)
 
     private val ifk = new InterfaceKitPhidget()
     private var ifkConnected = false
@@ -57,8 +61,12 @@ class InterfaceKitActor extends Actor{
     ifk.addInputChangeListener(new InputChangeListener() {
 
         def inputChanged(oe: InputChangeEvent) {
-            //println(s"input ${oe.getIndex} : ${oe.getState}")
-            inputs(oe.getIndex) = true
+            if(inputs(oe.getIndex) == 0) {
+                inputs(oe.getIndex) = 1
+            } else if(inputs(oe.getIndex) == 1) {
+                inputs(oe.getIndex) = 2
+            }
+            println(s"input ${oe.getIndex} : ${oe.getState} & state : ${inputs(oe.getIndex)}")
             if(oe.getState == false && sounds.contains(oe.getIndex)){
                 player ! PlayerActor.Play(Song(sounds(oe.getIndex), sounds(oe.getIndex)))
             }
@@ -135,23 +143,23 @@ class InterfaceKitActor extends Actor{
     }
 
     def resetInputs(){
-        inputs = inputs.map(_=>false)
+        inputs = inputs.map(_=>0)
     }
-    def isThereInput = inputs.foldLeft(false){_||_}
-    def indexLastInput = inputs.indexOf(true)
+    def isThereButtonReleased = (inputs.indexOf(2) != -1)
+    def indexButtonReleased = inputs.indexOf(2)
 
     // Wait max 5 seconds
     def waitInput(){
         println("Waiting input")
         resetInputs()
         var i = 1
-        while(i <= 5*5 && !isThereInput){
-            Thread.sleep(200)
+        while(i <= 5*5 && !isThereButtonReleased){
+            Thread.sleep(100)
             i = i+1
         }
-        if(isThereInput){
+        if(isThereButtonReleased){
             //println(s"button $indexLastInput pushed")
-            sender ! Some(indexLastInput)
+            sender ! Some(indexButtonReleased)
         }else{
             //println(s"no button pushed...")
             sender ! None

@@ -118,6 +118,13 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     }
 
     def startPlaylist(name: String) = Action {
+        if(name == "alarm-clock"){
+/*
+            Future {
+                // Récupérer la température
+                //temperature = getTemperatureFromZolertia
+            }*/
+        }
         player ! PlayerActor.Play(Playlist(name))
         //interfaceKit ! 21
         Ok("OK!")

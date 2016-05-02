@@ -43,6 +43,7 @@ class ButtonsManager(player: ActorSelection, interfaceKit: ActorSelection){
 	}
 
 	def showSequence(sequence: List[Button]){
+		Thread.sleep(1000)
 		for(Button(color) <- sequence){
 			println(color)
 			playSound(color)
@@ -78,7 +79,7 @@ class SimonGame(buttonsManager: ButtonsManager) {
 	private def completeSequence(sequence: List[Button]): Boolean = sequence match {
 		case Nil => true
 		case x::xs if buttonsManager.askButton() == x => {
-			Thread.sleep(1000)
+			//Thread.sleep(1000)
 			completeSequence(xs)
 		}
 		case _ => false
@@ -97,11 +98,18 @@ class SimonGameActor extends Actor {
 	val buttonsManager = new ButtonsManager(player, interfaceKit)
 
 	def receive = {
-		case SimonGameActor.Play() => {
+		case SimonGameActor.Play(name: String) => {
 			val game = new SimonGame(buttonsManager)
 			val score = game.start()
 			player ! PlayerActor.Play(Song("Game over", endGameSound))
 			println(s"Game Over :(         Score: $score")
+            // Store the score
+            import controllers.GamesController._
+            import java.util.Date
+            import java.text.SimpleDateFormat
+            val dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+            val date = new Date()
+            addScore(Score(name, score, dateFormat.format(date)))
 		}
 	}
 }
@@ -111,7 +119,7 @@ object SimonGameActor {
 
 	abstract class Message
 
-	case class Play() extends Message
+	case class Play(name: String) extends Message
 }
 
 object SimonGame{

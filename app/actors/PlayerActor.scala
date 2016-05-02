@@ -120,23 +120,8 @@ object PausablePlayer {
     def play(playable: Playable){
         this.playable = playable
         playable match {
-            case song: Song         => {
-                remainingSongs = Queue(song)
-                println(s"Song  :")
-                for( song <- remainingSongs.toList){
-                    println(song.toString)
-                }
-                println(s"End song")
-            }
-            case playlist: Playlist => {
-                remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
-
-                println(s"Playlist $playlist :")
-                for( song <- remainingSongs.toList){
-                    println(song.toString)
-                }
-                println(s"End $playlist")
-            }
+            case song: Song         => remainingSongs = Queue(song)
+            case playlist: Playlist => remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
         }
 
         player =  new Player(new BufferedInputStream(new FileInputStream(remainingSongs.dequeue.filename)))
@@ -153,7 +138,6 @@ object PausablePlayer {
         while (!end && !halt) {
             end = !player.play(1)
         }
-        println(s"end song 1")
 
         // Play remaining songs if any
         while(!halt && !remainingSongs.isEmpty) {

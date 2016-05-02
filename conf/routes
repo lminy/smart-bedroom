@@ -27,7 +27,11 @@ POST    /playlists/:name/stop       controllers.PlaylistsController.stopPlaylist
 
 DELETE  /playlists/:name/:songName  controllers.PlaylistsController.removeSong(name, songName)
 
-POST    /games/simon                controllers.GamesController.startSimonGame
+POST    /games/simon/:name          controllers.GamesController.startSimonGame(name)
+
+GET     /games/simon/scoreboard     controllers.GamesController.getScoreboard
+
+GET     /games/simon/score          controllers.GamesController.getLastScore
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
