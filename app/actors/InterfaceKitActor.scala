@@ -84,11 +84,11 @@ class InterfaceKitActor extends Actor{
         def sensorChanged(oe: SensorChangeEvent) {
             val value = oe.getValue
             println("Value " + value)
-            if (oe.getIndex == 7){
+            if (oe.getIndex == 7){ // Force sensor
                 if (value == 0){
                     player ! PlayerActor.StopAlarm()
                 }
-            }else if (oe.getIndex == 6){
+            }else if (oe.getIndex == 6){ // Slider sensor
                 if (value > 0 && value < 450 && playlist != 1){
                     player ! PlayerActor.Play(Playlist("good-mood"))
                     playlist = 1
@@ -113,16 +113,6 @@ class InterfaceKitActor extends Actor{
         println("connected to ifk!")
     }catch{
         case ex:PhidgetException => println("No interfaceKit connected...")
-    }
-
-
-    def changeColor(i:Int){
-        println("Message reçu: "+i)
-        ifk.setOutputState(5, false)
-        ifk.setOutputState(6, false)
-        ifk.setOutputState(7, false)
-        ifk.setOutputState(i, true)
-        println("Lumière "+i+" selectionée")
     }
 
     def turnOffAll(){
@@ -166,6 +156,14 @@ class InterfaceKitActor extends Actor{
         }
     }
 
+    def presence(){
+        if(ifk.getSensorValue(0) > 700){
+            sender ! true
+        }else{
+            sender ! false
+        }
+    }
+
     def receive = {
         /*case 5 => changeColor(5)
         case 6 => changeColor(6)
@@ -174,6 +172,7 @@ class InterfaceKitActor extends Actor{
         case TurnOn(index) => turnOn(index)
         case TurnOff(index) => turnOff(index)
         case WaitInput() => waitInput()
+        case Presence() => presence()
         case _ => println("Nothing to do")
     }
 }
@@ -187,6 +186,7 @@ object InterfaceKitActor {
     case class TurnOn(index: Int) extends Message
     case class TurnOff(index: Int) extends Message
     case class WaitInput() extends Message
+    case class Presence() extends Message
 /*
     val master = ActorSystem("SmartHome")
     val interfaceKit = master.actorOf(InterfaceKitActor.props, name = "interfaceKit")

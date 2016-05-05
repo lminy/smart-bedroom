@@ -105,9 +105,9 @@ class GamesController @Inject() (system: ActorSystem) extends Controller {
         if(lastScore == null){
             Ok("nothing")
         }else{
-            val score = Json.toJson(lastScore)
+            val score = lastScore.points //Json.toJson(lastScore)
             lastScore = null
-            Ok(Json.toJson(score))
+            Ok(score.toString) //Json.toJson(score))
         }
     }
 

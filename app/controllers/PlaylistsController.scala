@@ -17,6 +17,11 @@ import java.io.FileInputStream;
 
 import javazoom.jl.player.Player;
 
+//Concurency imports
+import scala.concurrent._
+import scala.concurrent.duration._
+import ExecutionContext.Implicits.global
+
 import actors._
 
 object PlaylistsController{
@@ -64,6 +69,7 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     import PlaylistsController._
 
     val player = system.actorSelection("user/player")
+    val interfaceKit = system.actorSelection("user/interfaceKit")
 
     ///////////////////
     // HTTP HANDLERS //
@@ -118,12 +124,18 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
     }
 
     def startPlaylist(name: String) = Action {
+        import actors.InterfaceKitActor._
+
         if(name == "alarm-clock"){
-/*
             Future {
                 // Récupérer la température
-                //temperature = getTemperatureFromZolertia
-            }*/
+                val temperature = 0 //getTemperatureFromZolertia
+                while(temperature < 23){
+                    interfaceKit ! TurnOn(4)
+                    Thread.sleep(2*60*1000)
+                }
+                interfaceKit ! TurnOff(4)
+            }
         }
         player ! PlayerActor.Play(Playlist(name))
         //interfaceKit ! 21
