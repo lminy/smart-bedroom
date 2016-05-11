@@ -18,6 +18,7 @@ class Actors @Inject() (system: ActorSystem, appLifecycle: ApplicationLifecycle)
 	val interfaceKit = system.actorOf(InterfaceKitActor.props, "interfaceKit")
 	val rfid = system.actorOf(RFIDActor.props, "rfid")
 	val simon = system.actorOf(SimonGameActor.props, "simonGame")
+	val servo = system.actorOf(ServoMoteurActor.props, "servo")
 
 	Logger.info(s"Actors.scala : actors created")
 }
