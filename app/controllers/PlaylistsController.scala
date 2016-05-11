@@ -67,9 +67,11 @@ object PlaylistsController{
 class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
 
     import PlaylistsController._
+    import actors.ServoMoteurActor._
 
     val player = system.actorSelection("user/player")
     val interfaceKit = system.actorSelection("user/interfaceKit")
+    val servo = system.actorSelection("user/servo")
 
     ///////////////////
     // HTTP HANDLERS //
@@ -136,6 +138,7 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
                 }
                 interfaceKit ! TurnOff(4)
             }
+            servo ! Open()
         }
         player ! PlayerActor.Play(Playlist(name))
         //interfaceKit ! 21
