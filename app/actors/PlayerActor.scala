@@ -32,23 +32,31 @@ object PlayerActor {
 class PlayerActor extends Actor {
     import PlayerActor._
 
+    val player = new PausablePlayer()
+
     def stopped: Receive = {
+
+        case Play(sound: Sound) => { // Un son peut se lancer en même temps qu'une musique :)
+            val p = new PausablePlayer()
+            p.play(sound)
+        }
+
         case Play(playable: Playable) => {
-            PausablePlayer.play(playable)
+            player.play(playable)
             context become playing
         }
     }
 
     def playing: Receive = {
         case Stop() => {
-            PausablePlayer.stop()
+            player.stop()
             context become stopped
         }
 
         case StopAlarm() => {
-            PausablePlayer.getPlayable match {
+            player.getPlayable match {
                 case Playlist(name) if name == "alarm-clock" => {
-                    PausablePlayer.stop()
+                    player.stop()
                     context become stopped
                 }
                 case _ => {/* IGNORE STOP */}
@@ -56,9 +64,9 @@ class PlayerActor extends Actor {
         }
 
         case PauseAlarm() => {
-            PausablePlayer.getPlayable match {
+            player.getPlayable match {
                 case Playlist(name) if name == "alarm-clock" => {
-                    PausablePlayer.pause()
+                    player.pause()
                     context become paused
                 }
                 case _ => {/* IGNORE STOP */}
@@ -66,48 +74,59 @@ class PlayerActor extends Actor {
         }
 
         case Pause() => {
-            PausablePlayer.pause()
+            player.pause()
             context become paused
         }
+
+        case Play(sound: Sound) => { // Un son peut se lancer en même temps qu'une musique :)
+            val p = new PausablePlayer()
+            p.play(sound)
+        }
+
         case Play(playable: Playable) => {
-            PausablePlayer.stop()
+            player.stop()
             //println("Stop & Playing...")
-            PausablePlayer.play(playable)
+            player.play(playable)
         }
     }
 
     def paused: Receive = {
         case Resume() => {
-            PausablePlayer.resume()
+            player.resume()
             context become playing
         }
 
         case Stop() => {
-            PausablePlayer.stop()
+            player.stop()
             context become stopped
         }
 
         case StopAlarm() => {
-            PausablePlayer.getPlayable match {
+            player.getPlayable match {
                 case Playlist(name) if name == "alarm-clock" => {
-                    PausablePlayer.stop()
+                    player.stop()
                     context become stopped
                 }
                 case _ => {/* IGNORE STOP */}
             }
         }
 
+        case Play(sound: Sound) => { // Un son peut se lancer en même temps qu'une musique :)
+            val p = new PausablePlayer()
+            p.play(sound)
+        }
+
         case Play(playable: Playable) => {
-            PausablePlayer.stop()
+            player.stop()
             //println("Stop & Playing...")
-            PausablePlayer.play(playable)
+            player.play(playable)
         }
     }
 
     def receive = stopped // Start out as stopped
 }
 
-object PausablePlayer {
+class PausablePlayer {
 
     var player: javazoom.jl.player.Player = _
     var thread: Thread = _
@@ -121,6 +140,7 @@ object PausablePlayer {
         this.playable = playable
         playable match {
             case song: Song         => remainingSongs = Queue(song)
+            case Sound(path)        => remainingSongs = Queue(Song(path, path))
             case playlist: Playlist => remainingSongs = Queue(Random.shuffle(playlist.songs): _*)
         }
 
@@ -183,6 +203,10 @@ object PausablePlayer {
 abstract class Playable
 
 case class Song(name: String, path: String) extends Playable {
+    def filename = path
+}
+
+case class Sound(path: String) extends Playable {
     def filename = path
 }
 

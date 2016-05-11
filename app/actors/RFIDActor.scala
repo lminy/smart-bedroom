@@ -27,6 +27,8 @@ import scala.concurrent.duration._
 
 import play.api.libs.concurrent.Execution.Implicits._
 
+import controllers.GamesController._
+
 object RFIDActor {
     def props = Props[RFIDActor]
 
@@ -95,6 +97,17 @@ class RFIDActor() extends Actor {
     })
 
     def changeTag(id: String) {
+
+        player ! PlayerActor.Play(Sound(endGameSound))
+
+        // All balls
+        println("Snooze")
+        player ! PlayerActor.PauseAlarm()
+        //context.system.scheduler.scheduleOnce(10 seconds, player, PlayerActor.Resume())
+        context.system.scheduler.scheduleOnce(10 seconds) {
+            player ! PlayerActor.Resume()
+        }
+
         if (id.equalsIgnoreCase("4a003749b0")) {
             interfaceKit ! TurnOffAll()
             interfaceKit ! TurnOn(5)
@@ -108,12 +121,12 @@ class RFIDActor() extends Actor {
             interfaceKit ! TurnOn(7)
         }
         else if (id.equalsIgnoreCase("5c005e3598")) {
-            println("Snooze")
+            /*println("Snooze")
             player ! PlayerActor.PauseAlarm()
             //context.system.scheduler.scheduleOnce(10 seconds, player, PlayerActor.Resume())
             context.system.scheduler.scheduleOnce(10 seconds) {
                 player ! PlayerActor.Resume()
-            }
+            }*/
         }
         else if (id.equalsIgnoreCase("700082406f")) {
             interfaceKit ! TurnOffAll()

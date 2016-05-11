@@ -37,7 +37,7 @@ object GamesController{
 
     def endGameSound = play.Play.application.configuration.getString("end-game-sound")
 
-    val scoresPath = "app/controllers/scores.json"
+    val scoresPath = "scores.json"
 
     def readScores: List[Score] = Json.parse(Source.fromFile(scoresPath).getLines.mkString).as[List[Score]]
 
