@@ -123,14 +123,21 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
         }
     }
 
+    def getTemperature = {
+        import sys.process._
+        "cd Desktop/contiki-3.0/examples/z1/ && java UDPServerJava" !!
+    }
+
     def startPlaylist(name: String) = Action {
         import actors.InterfaceKitActor._
 
         if(name == "alarm-clock"){
             Future {
                 // Récupérer la température
-                val temperature = 0 //getTemperatureFromZolertia
-                while(temperature < 23){
+                val temperature = getTemperature //getTemperatureFromZolertia
+                println(s"Temperature : $temperature")
+                val temp = 21
+                while(temp < 23){
                     interfaceKit ! TurnOn(4)
                     Thread.sleep(2*60*1000)
                 }
