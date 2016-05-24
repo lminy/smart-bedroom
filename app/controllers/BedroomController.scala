@@ -29,6 +29,7 @@ class BedroomController @Inject() (system: ActorSystem) extends Controller {
     import BedroomController._
 
     val interfaceKit = system.actorSelection("user/interfaceKit")
+    val servo = system.actorSelection("user/servo")
 
     ///////////////////
     // HTTP HANDLERS //
@@ -61,6 +62,12 @@ class BedroomController @Inject() (system: ActorSystem) extends Controller {
             Thread.sleep(5*60*1000)
             stop
         }
+        Ok("OK!")
+    }
+
+    def curtains = Action {
+        import actors.ServoMoteurActor._
+        servo ! Close()
         Ok("OK!")
     }
 

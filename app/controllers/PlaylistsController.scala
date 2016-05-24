@@ -24,6 +24,8 @@ import ExecutionContext.Implicits.global
 
 import actors._
 
+import play.api.Logger
+
 object PlaylistsController{
 
     ///////////////
@@ -125,25 +127,40 @@ class PlaylistsController @Inject() (system: ActorSystem) extends Controller {
         }
     }
 
-    def getTemperature = {
-        import sys.process._
-        "cd Desktop/contiki-3.0/examples/z1/ && java UDPServerJava" !!
+    def getTemperature: Float = {
+        import java.io._
+        import java.net._
+
+        val serverSocket = new DatagramSocket(5678) // Création du socket UDP
+        val receiveData = Array.ofDim[Byte](1024)
+        val receivePacket = new DatagramPacket(receiveData, receiveData.length)
+
+        serverSocket.receive(receivePacket) // Récupération du paquet
+        val sentence = new String(receivePacket.getData()) // Récupération des données du paquet
+        serverSocket.close()
+
+        Logger.debug(s"String temperature : $sentence")
+        sentence.toFloat // Conversion du texte (temperature) en Float
     }
 
     def startPlaylist(name: String) = Action {
         import actors.InterfaceKitActor._
+        Logger.debug("startPlaylist")
 
         if(name == "alarm-clock"){
+            Logger.debug("Alarm-clock")
             Future {
                 // Récupérer la température
-                val temperature = getTemperature //getTemperatureFromZolertia
-                println(s"Temperature : $temperature")
-                val temp = 21
-                while(temp < 23){
+                Logger.debug("Alarm-clock avant getTemperature")
+                var temperature = getTemperature //getTemperatureFromZolertia
+                while(temperature < 30){
                     interfaceKit ! TurnOn(4)
-                    Thread.sleep(2*60*1000)
+                    Logger.debug("Allumer chauffage")
+                    Thread.sleep(20*1000)
+                    temperature = getTemperature
                 }
                 interfaceKit ! TurnOff(4)
+                Logger.debug("Eteindre chauffage")
             }
             servo ! Open()
         }

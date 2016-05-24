@@ -22,6 +22,7 @@ import com.phidgets.event.TagGainEvent
 import com.phidgets.event.TagGainListener
 import com.phidgets.event.TagLossEvent
 import com.phidgets.event.TagLossListener
+import play.api.Logger
 
 import scala.concurrent.duration._
 
@@ -58,15 +59,15 @@ class RFIDActor() extends Actor {
                 ae.getSource.asInstanceOf[RFIDPhidget].setAntennaOn(true)
                 ae.getSource.asInstanceOf[RFIDPhidget].setLEDOn(true)
             } catch {
-                case ex: PhidgetException => println("exception")
+                case ex: PhidgetException => Logger.debug("exception")
             }
-            println("attachment of " + ae)
+            Logger.debug("attachment of " + ae)
         }
     })
     rfidPh.addDetachListener(new DetachListener() {
 
         def detached(ae: DetachEvent) {
-            println("detachment of " + ae)
+            Logger.debug("detachment of " + ae)
         }
     })
     rfidPh.addErrorListener(new ErrorListener() {
@@ -78,7 +79,7 @@ class RFIDActor() extends Actor {
     rfidPh.addTagGainListener(new TagGainListener() {
 
         def tagGained(oe: TagGainEvent) {
-            println(oe.getValue)
+            Logger.debug(oe.getValue)
             changeTag(oe.getValue)
             rfidPh.setLEDOn(false)
         }
@@ -92,7 +93,7 @@ class RFIDActor() extends Actor {
     rfidPh.addOutputChangeListener(new OutputChangeListener() {
 
         def outputChanged(oe: OutputChangeEvent) {
-            println(oe)
+            //Logger.debug("Error")
         }
     })
 
@@ -101,32 +102,24 @@ class RFIDActor() extends Actor {
         player ! PlayerActor.Play(Sound(endGameSound))
 
         // All balls
-        println("Snooze")
+        Logger.debug("Snooze")
         player ! PlayerActor.PauseAlarm()
         //context.system.scheduler.scheduleOnce(10 seconds, player, PlayerActor.Resume())
         context.system.scheduler.scheduleOnce(10 seconds) {
             player ! PlayerActor.Resume()
         }
 
-        if (id.equalsIgnoreCase("4a003749b0")) {
+        if (id.equalsIgnoreCase("5c005e6423")) {
             interfaceKit ! TurnOffAll()
             interfaceKit ! TurnOn(5)
         }
-        else if (id.equalsIgnoreCase("4a003726cb")) {
+        else if (id.equalsIgnoreCase("5c005e3598")) {
             interfaceKit ! TurnOffAll()
             interfaceKit ! TurnOn(6)
         }
-        else if (id.equalsIgnoreCase("2800b87ac5")) {
+        else if (id.equalsIgnoreCase("5c005c8cb4")) {
             interfaceKit ! TurnOffAll()
             interfaceKit ! TurnOn(7)
-        }
-        else if (id.equalsIgnoreCase("5c005e3598")) {
-            /*println("Snooze")
-            player ! PlayerActor.PauseAlarm()
-            //context.system.scheduler.scheduleOnce(10 seconds, player, PlayerActor.Resume())
-            context.system.scheduler.scheduleOnce(10 seconds) {
-                player ! PlayerActor.Resume()
-            }*/
         }
         else if (id.equalsIgnoreCase("700082406f")) {
             interfaceKit ! TurnOffAll()
@@ -139,11 +132,9 @@ class RFIDActor() extends Actor {
             if (temprfid == 0) {
                 rfidPh.openAny()
                 rfidPh.waitForAttachment(1000)
-                //RID connecté
-                //TODO
             }
         } catch {
-            case e: PhidgetException => println("No rfid connected")
+            case e: PhidgetException => Logger.debug("No rfid connected")
             case e: InterruptedException => e.printStackTrace()
         }
         //Premier passage dans la boucle
@@ -152,6 +143,6 @@ class RFIDActor() extends Actor {
 
     //L'acteur RFID n'est censé recevoir aucun message, car ce n'est pas un actuateur
     def receive = {
-        case _ => println("Message to RFID !")
+        case _ => Logger.debug("Message to RFID !")
     }
 }

@@ -11,6 +11,7 @@ import scala.util.Random
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.File
+import play.api.Logger
 
 // Akka
 import akka.actor._
@@ -85,7 +86,7 @@ class PlayerActor extends Actor {
 
         case Play(playable: Playable) => {
             player.stop()
-            //println("Stop & Playing...")
+            //Logger.debug("Stop & Playing...")
             player.play(playable)
         }
     }
@@ -118,7 +119,7 @@ class PlayerActor extends Actor {
 
         case Play(playable: Playable) => {
             player.stop()
-            //println("Stop & Playing...")
+            //Logger.debug("Stop & Playing...")
             player.play(playable)
         }
     }
@@ -151,7 +152,7 @@ class PausablePlayer {
     def playInternal() {
         halt = false
 
-        //println("Playing...")
+        //Logger.debug("Playing...")
 
         // Play first song
         var end = false

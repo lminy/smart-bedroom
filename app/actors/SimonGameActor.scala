@@ -1,6 +1,3 @@
-// scalac -classpath .;*.jar SimonGame.scala
-// scala -classpath .;*.jar SimonGame
-
 package actors
 
 import akka.actor._
@@ -16,6 +13,7 @@ import java.io._
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import play.api.Logger
 
 import scala.language.postfixOps
 
@@ -36,7 +34,7 @@ class ButtonsManager(player: ActorSelection, interfaceKit: ActorSelection){
  		implicit val timeout = Timeout(5 seconds)
 		val future = interfaceKit ? InterfaceKitActor.WaitInput()
     	val result = Try(Await.result(future, timeout.duration).asInstanceOf[Option[Int]])
-    	println(s"Result input : $result")
+    	Logger.debug(s"Result input : $result")
 
 		//if(sounds contains color) playSound(color)
 		Button(result.getOrElse(None).getOrElse(-1))
@@ -45,7 +43,7 @@ class ButtonsManager(player: ActorSelection, interfaceKit: ActorSelection){
 	def showSequence(sequence: List[Button]){
 		Thread.sleep(1000)
 		for(Button(color) <- sequence){
-			println(color)
+			Logger.debug(color.toString)
 			playSound(color)
 		}
 	}
@@ -64,6 +62,11 @@ class SimonGame(buttonsManager: ButtonsManager) {
 
 	val infiniteSequence: Stream[Button] = buttonsGen
 
+    private def buttonsGen: Stream[Button] = {
+		val rnd = new scala.util.Random
+		buttons(rnd.nextInt(buttons length)) #:: buttonsGen
+	}
+
 	def start():Int = play(1) // Start the game
 
 	//Retourne le score
@@ -79,15 +82,9 @@ class SimonGame(buttonsManager: ButtonsManager) {
 	private def completeSequence(sequence: List[Button]): Boolean = sequence match {
 		case Nil => true
 		case x::xs if buttonsManager.askButton() == x => {
-			//Thread.sleep(1000)
 			completeSequence(xs)
 		}
 		case _ => false
-	}
-
-	private def buttonsGen: Stream[Button] = {
-		val rnd = new scala.util.Random
-		buttons(rnd.nextInt(buttons length)) #:: buttonsGen
 	}
 }
 
@@ -102,7 +99,7 @@ class SimonGameActor extends Actor {
 			val game = new SimonGame(buttonsManager)
 			val score = game.start()
 			player ! PlayerActor.Play(Song("Game over", endGameSound))
-			println(s"Game Over :(         Score: $score")
+			Logger.debug(s"Game Over :(         Score: $score")
             // Store the score
             import controllers.GamesController._
             import java.util.Date
@@ -120,15 +117,4 @@ object SimonGameActor {
 	abstract class Message
 
 	case class Play(name: String) extends Message
-}
-
-object SimonGame{
-	def main(args: Array[String]){
-		/*
-		val game = new SimonGame()
-		val score = game.start()
-		ButtonsManager.playSound("coins.mp3")
-		println(s"Result : $score")
-		*/
-	}
 }

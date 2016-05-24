@@ -17,6 +17,7 @@ import com.phidgets.event.OutputChangeEvent
 import com.phidgets.event.OutputChangeListener
 import com.phidgets.event.SensorChangeEvent
 import com.phidgets.event.SensorChangeListener
+import play.api.Logger
 
 import actors._
 
@@ -36,26 +37,26 @@ class InterfaceKitActor extends Actor{
     private val ifk = new InterfaceKitPhidget()
     private var ifkConnected = false
 
-    println("creating interfaceKit...")
+    Logger.debug("creating interfaceKit...")
 
     ifk.addAttachListener(new AttachListener() {
 
         def attached(ae: AttachEvent) {
-            println("attachment of " + ae)
+            Logger.debug("attachment of " + ae)
             ifkConnected = true
         }
     })
     ifk.addDetachListener(new DetachListener() {
 
         def detached(ae: DetachEvent) {
-            println("detachment of " + ae)
+            Logger.debug("detachment of " + ae)
             ifkConnected = false
         }
     })
     ifk.addErrorListener(new ErrorListener() {
 
         def error(ee: ErrorEvent) {
-            println(ee.getSource)
+            //Logger.debug("Error listener")
         }
     })
     ifk.addInputChangeListener(new InputChangeListener() {
@@ -66,7 +67,7 @@ class InterfaceKitActor extends Actor{
             } else if(inputs(oe.getIndex) == 1) {
                 inputs(oe.getIndex) = 2
             }
-            println(s"input ${oe.getIndex} : ${oe.getState} & state : ${inputs(oe.getIndex)}")
+            Logger.debug(s"input ${oe.getIndex} : ${oe.getState} & state : ${inputs(oe.getIndex)}")
             if(oe.getState == false && sounds.contains(oe.getIndex)){
                 player ! PlayerActor.Play(Song(sounds(oe.getIndex), sounds(oe.getIndex)))
             }
@@ -75,15 +76,15 @@ class InterfaceKitActor extends Actor{
     ifk.addOutputChangeListener(new OutputChangeListener() {
 
         def outputChanged(oe: OutputChangeEvent) {
-            //println(oe)
-            //println("Event output")
+            //Logger.debug(oe)
+            //Logger.debug("Event output")
         }
     })
     ifk.addSensorChangeListener(new SensorChangeListener() {
         var playlist = 0
         def sensorChanged(oe: SensorChangeEvent) {
             val value = oe.getValue
-            println("Value " + value)
+            Logger.debug("Value " + value)
             if (oe.getIndex == 7){ // Force sensor
                 if (value == 0){
                     player ! PlayerActor.StopAlarm()
@@ -106,30 +107,30 @@ class InterfaceKitActor extends Actor{
         }
     })
 
-    println("Connecting to ifk...")
+    Logger.debug("Connecting to ifk...")
     try{
         ifk.openAny()
         ifk.waitForAttachment(10000)
-        println("connected to ifk!")
+        Logger.debug("connected to ifk!")
     }catch{
-        case ex:PhidgetException => println("No interfaceKit connected...")
+        case ex:PhidgetException => Logger.debug("No interfaceKit connected...")
     }
 
     def turnOffAll(){
         for(index <- 0 to 7){
             ifk.setOutputState(index, false)
         }
-        //println("All leds turned off")
+        //Logger.debug("All leds turned off")
     }
 
     def turnOn(index: Int){
         ifk.setOutputState(index, true)
-        //println(s"Led $index turned on")
+        //Logger.debug(s"Led $index turned on")
     }
 
     def turnOff(index: Int){
         ifk.setOutputState(index, false)
-        //println(s"Led $index turned off")
+        //Logger.debug(s"Led $index turned off")
     }
 
     def resetInputs(){
@@ -140,7 +141,7 @@ class InterfaceKitActor extends Actor{
 
     // Wait max 5 seconds
     def waitInput(){
-        println("Waiting input")
+        Logger.debug("Waiting input")
         resetInputs()
         var i = 1
         while(i <= 5*5 && !isThereButtonReleased){
@@ -148,10 +149,10 @@ class InterfaceKitActor extends Actor{
             i = i+1
         }
         if(isThereButtonReleased){
-            //println(s"button $indexLastInput pushed")
+            //Logger.debug(s"button $indexLastInput pushed")
             sender ! Some(indexButtonReleased)
         }else{
-            //println(s"no button pushed...")
+            //Logger.debug(s"no button pushed...")
             sender ! None
         }
     }
@@ -165,15 +166,12 @@ class InterfaceKitActor extends Actor{
     }
 
     def receive = {
-        /*case 5 => changeColor(5)
-        case 6 => changeColor(6)
-        case 7 => changeColor(7)*/
         case TurnOffAll() => turnOffAll()
         case TurnOn(index) => turnOn(index)
         case TurnOff(index) => turnOff(index)
         case WaitInput() => waitInput()
         case Presence() => presence()
-        case _ => println("Nothing to do")
+        case _ => Logger.debug("Nothing to do")
     }
 }
 
@@ -187,15 +185,5 @@ object InterfaceKitActor {
     case class TurnOff(index: Int) extends Message
     case class WaitInput() extends Message
     case class Presence() extends Message
-/*
-    val master = ActorSystem("SmartHome")
-    val interfaceKit = master.actorOf(InterfaceKitActor.props, name = "interfaceKit")
 
-    def main(args: Array[String]):Unit = {
-        Thread.sleep(2000)
-        println("Start Main")
-        interfaceKit ! TurnOffAll()
-        interfaceKit ! TurnOn(0)
-        println("End Main")
-    }*/
 }
